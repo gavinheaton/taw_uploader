@@ -20,7 +20,40 @@ function taw_uploader_setup_menu(){
 
 add_shortcode( 'taw_upload_shortcode', 'taw_upload_shortcode' );
 
-//function taw_uploader_init(){
+
+function taw_uploader_init(){
+  ?>
+  <h1>TheAir.Works File Uploader</h1>
+  <p>Enable the file uploader by using the <strong>[taw_upload_shortcode]</strong> shortcode on any page.</p>
+  <?php
+  $upload_dir = wp_get_upload_dir();
+
+  $siteUploads = get_site_url() . '/wp-content/uploads/uploader/';
+  echo "<p>Uploads are stored in {$siteUploads}";
+  echo "<table><tr><td>Name</td><td></td></tr>";
+  $files = glob($siteUploads . "*.*");
+  print_r ($files);
+  //echo "<p>Setting up</p>";
+  for ($i = 0; $i < count($files); $i++) {
+    $image = $files[$i];
+    $supported_file = array(
+        'gif',
+        'jpg',
+        'jpeg',
+        'png',
+        'pdf'
+    );
+    $ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
+    if (in_array($ext, $supported_file)) {
+      echo "<tr><td>".basename($image)."</td>";
+      echo '<td><a target="_blank" href="' . $siteUploads . basename($image) . '">Download</a></td></tr>';
+    } else {
+      continue;
+    }
+  }
+  echo "</table>";
+}
+
 // Because we are working on the front end we use the short code
 function taw_upload_shortcode(){
   // Get the slug from the url
@@ -53,24 +86,25 @@ function taw_upload_shortcode(){
   </form>
   <br />
 <?php
-//echo "Displaying {$dir2}";
-//getFileList($dir2);
-//echo "-----";
 }
 
 function listFiles($dir2){
   global $post;
   $post_slug = $post->post_name;
-  $upload_dir = wp_upload_dir();
+  $upload_dir = wp_get_upload_dir();
+
 
   // check if the upload directory related to this page is available
   $uploadCheck = $upload_dir['basedir'] . '/uploader/' . $post_slug.'/';
+  $siteUploads = get_site_url() . '/wp-content/uploads/uploader/' . $post_slug.'/';
+    //echo "URL is {$uploadCheck}";
   //echo "<p>Uploading to {$uploadCheck}</p>";
 
   //$fulldir = "/wp-content/uploads/uploader/";
   echo "<table><tr><th>File name</th><th>Actions</th></tr>";
 
   $files = glob($uploadCheck . "*.*");
+  //echo "<p>Setting up</p>";
   for ($i = 0; $i < count($files); $i++) {
     $image = $files[$i];
     $supported_file = array(
@@ -84,7 +118,7 @@ function listFiles($dir2){
     $ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
     if (in_array($ext, $supported_file)) {
       echo "<tr><td>".basename($image)."</td>";
-      echo '<td><a target="_blank" href="' . $uploadCheck . basename($image) . '">Download</a></td></tr>';
+      echo '<td><a target="_blank" href="' . $siteUploads . basename($image) . '">Download</a></td></tr>';
     } else {
       continue;
     }
