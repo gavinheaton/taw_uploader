@@ -20,38 +20,55 @@ function taw_uploader_setup_menu(){
 
 add_shortcode( 'taw_upload_shortcode', 'taw_upload_shortcode' );
 
-
 function taw_uploader_init(){
   ?>
   <h1>TheAir.Works File Uploader</h1>
   <p>Enable the file uploader by using the <strong>[taw_upload_shortcode]</strong> shortcode on any page.</p>
   <?php
-  $upload_dir = wp_get_upload_dir();
 
-  $siteUploads = get_site_url() . '/wp-content/uploads/uploader/';
-  echo "<p>Uploads are stored in {$siteUploads}";
-  echo "<table><tr><td>Name</td><td></td></tr>";
-  $files = glob($siteUploads . "*.*");
-  print_r ($files);
-  //echo "<p>Setting up</p>";
-  for ($i = 0; $i < count($files); $i++) {
-    $image = $files[$i];
-    $supported_file = array(
-        'gif',
-        'jpg',
-        'jpeg',
-        'png',
-        'pdf'
-    );
-    $ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
-    if (in_array($ext, $supported_file)) {
-      echo "<tr><td>".basename($image)."</td>";
-      echo '<td><a target="_blank" href="' . $siteUploads . basename($image) . '">Download</a></td></tr>';
-    } else {
-      continue;
-    }
+  $upload_dir = wp_upload_dir();
+//  $folder = get_site_url() . '/wp-content/uploads/uploader/';
+  $folder = $upload_dir['basedir'].'/uploader';
+  echo "<div style='padding-left: 10px'>";
+  get_all_directory_and_files($folder);
+  echo "</div>";
+
+}
+
+function get_all_directory_and_files($dir){
+
+    $dh = new DirectoryIterator($dir);
+    // Dirctary object
+    foreach ($dh as $item) {
+        if (!$item->isDot()) {
+           if ($item->isDir()) {
+               get_all_directory_and_files("$dir/$item");
+           } else {
+               echo $dir . "/" . $item->getFilename();
+               echo "<br>";
+           }
+        }
+     }
   }
-  echo "</table>";
+
+function taw_uploader_init2(){
+  ?>
+  <h1>TheAir.Works File Uploader</h1>
+  <p>Enable the file uploader by using the <strong>[taw_upload_shortcode]</strong> shortcode on any page.</p>
+  <?php
+  //$fulldir = "/wp-content/uploads/uploader/";
+  echo "<table><tr><th>File name</th><th>Actions</th></tr>";
+  //$files1 = scandir($siteUploads);
+  $upload_dir = wp_upload_dir();
+  $folder = $upload_dir['basedir'].'/uploader';
+  $files = list_files( $folder, 2 );
+  foreach ( $files as $file ) {
+      if ( is_file( $file ) ) {
+          $filesize = size_format( filesize( $file ) );
+          $filename = basename( $file );
+      }
+      echo esc_html( $filename . "-" . $filesize );
+  }
 }
 
 // Because we are working on the front end we use the short code
@@ -108,11 +125,15 @@ function listFiles($dir2){
   for ($i = 0; $i < count($files); $i++) {
     $image = $files[$i];
     $supported_file = array(
-        'gif',
-        'jpg',
-        'jpeg',
-        'png',
-        'pdf'
+      'gif',
+      'jpg',
+      'jpeg',
+      'png',
+      'pdf',
+      'ppt',
+      'pptx',
+      'doc',
+      'docx'
     );
 
     $ext = strtolower(pathinfo($image, PATHINFO_EXTENSION));
