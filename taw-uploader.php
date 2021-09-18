@@ -12,14 +12,26 @@ Author: TheAir.Works
 Version: 1.0
 Author URI: https://theair.works
 */
+
+// Setup admin menu
 add_action('admin_menu', 'taw_uploader_setup_menu');
 
 function taw_uploader_setup_menu(){
     add_menu_page( 'TAW Uploader', 'TAW Uploader', 'manage_options', 'taw-uploader', 'taw_uploader_init' );
 }
 
+// Create the shortcode
 add_shortcode( 'taw_upload_shortcode', 'taw_upload_shortcode' );
 
+// Load custom css for the Admin page
+function admin_register_head() {
+      $siteurl = get_option('siteurl');
+      $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/admin-style.css';
+      echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
+  }
+  add_action('admin_head', 'admin_register_head');
+
+// Initial loader for plugin
 function taw_uploader_init(){
   ?>
   <h1>TheAir.Works File Uploader</h1>
@@ -30,26 +42,38 @@ function taw_uploader_init(){
 //  $folder = get_site_url() . '/wp-content/uploads/uploader/';
   $folder = $upload_dir['basedir'].'/uploader';
   echo "<div style='padding-left: 10px'>";
+  echo "<table width='50%' border='1'><tr><th>Folder</th><th>Filename</th></tr>";
   get_all_directory_and_files($folder);
+  echo "</table>";
   echo "</div>";
 
 }
 
 function get_all_directory_and_files($dir){
-
-    $dh = new DirectoryIterator($dir);
-    // Dirctary object
-    foreach ($dh as $item) {
-        if (!$item->isDot()) {
-           if ($item->isDir()) {
-               get_all_directory_and_files("$dir/$item");
-           } else {
-               echo $dir . "/" . $item->getFilename();
-               echo "<br>";
-           }
+  // Make table
+  $iterator = new DirectoryIterator($dir);
+  foreach ($iterator as $dirInfo) {
+      if (!$dirInfo->isDot()) {
+        if ($dirInfo->isDir()){
+          $directoryName = $dirInfo->getFilename();
+        } else {
+          $directoryName = "-";
         }
-     }
+        echo "<tr><td>{$directoryName}</td><td>";
+        $fileTarget = $dir . "/" . $directoryName;
+        $fileIterator = new DirectoryIterator($fileTarget);
+        foreach ($fileIterator as $fileinfo){
+          if ($fileinfo->isFile()){
+            $fileN = $fileinfo->getFilename();
+          } else {
+            //$fileN = "-";
+          }
+          echo "{$fileN}</br>";
+        }
+        echo "</td></tr>";
+    }
   }
+}
 
 function taw_uploader_init2(){
   ?>
