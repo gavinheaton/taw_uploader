@@ -24,12 +24,13 @@ function taw_uploader_setup_menu(){
 add_shortcode( 'taw_upload_shortcode', 'taw_upload_shortcode' );
 
 // Load custom css for the Admin page
-function admin_register_head() {
-      $siteurl = get_option('siteurl');
-      $url = $siteurl . '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/admin-style.css';
-      echo "<link rel='stylesheet' type='text/css' href='$url' />\n";
+function load_custom_wp_admin_style($hook) {
+  if( $hook != 'toplevel_page_taw-uploader' ) {
+     return;
   }
-  add_action('admin_head', 'admin_register_head');
+  wp_enqueue_style( 'custom_wp_admin_css', plugins_url('admin-style.css', __FILE__) );
+}
+add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_style' );
 
 // Initial loader for plugin
 function taw_uploader_init(){
@@ -37,15 +38,15 @@ function taw_uploader_init(){
   <h1>TheAir.Works File Uploader</h1>
   <p>Enable the file uploader by using the <strong>[taw_upload_shortcode]</strong> shortcode on any page.</p>
   <?php
-
+  // Get upload directory information
   $upload_dir = wp_upload_dir();
-//  $folder = get_site_url() . '/wp-content/uploads/uploader/';
   $folder = $upload_dir['basedir'].'/uploader';
-  echo "<div style='padding-left: 10px'>";
-  echo "<table width='50%' border='1'><tr><th>Folder</th><th>Filename</th></tr>";
+  //echo "<div style='padding-left: 10px'>";
+  echo "<p>By default, files are uploaded to <strong>{$folder}</strong>.</p>
+  <table class='widefat'><thead><tr><th style='width: 120px;'>Folder</th><th>Filename</th></tr></thead>";
   get_all_directory_and_files($folder);
   echo "</table>";
-  echo "</div>";
+  //echo "</div>";
 
 }
 
@@ -59,16 +60,14 @@ function get_all_directory_and_files($dir){
         } else {
           $directoryName = "-";
         }
-        echo "<tr><td>{$directoryName}</td><td>";
+        echo "<tr><td><strong>{$directoryName}</strong></td><td>";
         $fileTarget = $dir . "/" . $directoryName;
         $fileIterator = new DirectoryIterator($fileTarget);
         foreach ($fileIterator as $fileinfo){
           if ($fileinfo->isFile()){
             $fileN = $fileinfo->getFilename();
-          } else {
-            //$fileN = "-";
+            echo "{$fileN}</br>";
           }
-          echo "{$fileN}</br>";
         }
         echo "</td></tr>";
     }
