@@ -23,3 +23,17 @@ th {
 
 tr:nth-child(even) {background: #CCC}
 tr:nth-child(odd) {background: #FFF}
+
+.button {
+  background-color: #2e3192;
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  margin: 4px 2px;
+}
+
+.button1 {border-radius: 10px;}

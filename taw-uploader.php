@@ -41,17 +41,14 @@ function taw_uploader_init(){
   // Get upload directory information
   $upload_dir = wp_upload_dir();
   $folder = $upload_dir['basedir'].'/uploader';
-  //echo "<div style='padding-left: 10px'>";
   echo "<p>By default, files are uploaded to <strong>{$folder}</strong>.</p>
-  <table class='widefat'><thead><tr><th style='width: 120px;'>Folder</th><th>Filename</th></tr></thead>";
+  <table class='widefat'><thead><tr><th style='width: 120px;'>Folder</th><th>Filename</th><th>Download</th></tr></thead>";
   get_all_directory_and_files($folder);
   echo "</table>";
-  //echo "</div>";
 
 }
 
 function get_all_directory_and_files($dir){
-  // Make table
   $iterator = new DirectoryIterator($dir);
   foreach ($iterator as $dirInfo) {
       if (!$dirInfo->isDot()) {
@@ -69,10 +66,135 @@ function get_all_directory_and_files($dir){
             echo "{$fileN}</br>";
           }
         }
-        echo "</td></tr>";
+        // create the row - adding the name of the folder to the button name so that it's easier to zip the folder for downloading
+        echo "</td><td><form method='post' id='{$directoryName}'> <input type='submit' value='Download' name='{$directoryName}' class='button button1'></form></td></tr>";
+        if(isset($_POST[$directoryName])) {
+            echo "{$directoryName} was selected";
+            $upload_dir = wp_upload_dir();
+            $folder = $upload_dir['basedir'] . '/uploader/' . $directoryName .'/';
+            fileZipper($folder);
+        }
+
     }
   }
 }
+
+function fileZipper3 ($folderZip){
+  echo "<p>Working with {$folderZip}";
+  // Set zip folder and directory
+  $files2 = new DirectoryIterator($folderZip);
+  $zip_file = $files2 . 'downloader.zip';
+  // Start archive
+  $zip = new ZipArchive();
+	if ( $zip->open($zip_file, ZipArchive::CREATE) !== TRUE) {
+	exit("There was an error creating the zip.");
+	}
+  # loop through each file
+  foreach($files2 as $file){
+      # add each file
+      $download_file = file_get_contents($files2);
+      #add it to the zip
+      $zip->addFromString($files2,$download_file);
+  }
+  # close zip
+  $zip->close();
+  // Force download as header
+  header('Content-type: application/zip');
+	header('Content-Disposition: attachment; filename="'.basename($zip_file).'"');
+	header("Content-length: " . filesize($zip_file));
+	header("Pragma: no-cache");
+	header("Expires: 0");
+  // Clear headers
+  ob_clean();
+	flush();
+  // Read the zip
+  readfile($zip_file);
+}
+
+
+function fileZipper ($folderZip){
+  echo "<p>Working with {$folderZip}";
+  $files2 = new DirectoryIterator($folderZip);
+  # create new zip opbject
+  $zip = new ZipArchive();
+
+ # create a temp file & open it
+ $tmp_file = $folderZip . 'downloader.zip';
+ echo "<p>Temp file is {$tmp_file}";
+ echo "<p>Changeing ownership</p>";
+ $zip->open($tmp_file, ZipArchive::CREATE);
+ chmod($tmp_file,0777);
+ print_r(fileowner($tmp_file));
+
+ # loop through each file
+ foreach($files2 as $file){
+
+     # Get the string of file names
+     $download_file = file_get_contents($files2);
+     # Add them to the zip
+     $zip->addFromString($files2,$download_file);
+
+ }
+
+ # close zip
+ $zip->close();
+
+ # send the file to the browser as a download
+header('Content-disposition: attachment; filename="'.$tmp_file.'"');
+header('Content-type: application/zip');
+
+// Clear headers
+ob_clean();
+flush();
+
+readfile($tmp_file);
+unlink(tmp_file);
+}
+
+
+function fileZipper2 ($folderZip){
+  // Get real path for our folder
+  $rootPath = realpath($folderZip);
+
+  // Initialize archive object
+  $zip = new ZipArchive();
+  echo "<p>Starting zip at {$folderZip}</p>";
+  $zip->open('file.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+// Create recursive directory iterator
+/** @var SplFileInfo[] $files */
+$files = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($rootPath),
+    RecursiveIteratorIterator::LEAVES_ONLY
+);
+
+foreach ($files as $name => $file)
+{
+    // Skip directories (they would be added automatically)
+    if (!$file->isDir())
+    {
+        // Get real and relative path for current file
+        $filePath = $file->getRealPath();
+        $relativePath = substr($filePath, strlen($rootPath) + 1);
+
+        // Add current file to archive
+        $zip->addFile($filePath, $relativePath);
+    }
+}
+
+echo "saving to {$zip}";
+
+// Zip archive will be created only after closing object
+$zip->close();
+// Send headers to force the download
+header("Content-type: application/zip");
+header("Content-Disposition: attachment; filename=file.zip");
+header("Pragma: no-cache");
+header("Expires: 0");
+readfile("file.zip");
+exit;
+}
+
 
 function taw_uploader_init2(){
   ?>
