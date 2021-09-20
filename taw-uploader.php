@@ -24,7 +24,8 @@ function taw_uploader_setup_menu(){
 add_shortcode( 'taw_upload_shortcode', 'taw_upload_shortcode' );
 
 // Register style sheets
-wp_register_style('TAWuploaderStyle', 'taw-style.css');
+$dir = plugin_dir_path( __DIR__ );
+wp_register_style('TAWuploaderStyle', '/wp-content/plugins/taw_uploader/taw-style.css');
 wp_enqueue_style( 'TAWuploaderStyle');
 
 // Load custom css for the Admin page
@@ -148,6 +149,7 @@ function taw_upload_shortcode(){
   $dir2 = $uploadCheck;
   taw_upload();
 ?>
+  <div id="TAWuploader">
   <h3>Upload a File</h3>
   <?php
   listFiles($dir2);
@@ -160,6 +162,7 @@ function taw_upload_shortcode(){
       <input type='submit'>
   </form>
   <br />
+</div>
 <?php
 }
 
