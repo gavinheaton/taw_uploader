@@ -23,6 +23,10 @@ function taw_uploader_setup_menu(){
 // Create the shortcode
 add_shortcode( 'taw_upload_shortcode', 'taw_upload_shortcode' );
 
+// Register style sheets
+wp_register_style('TAWuploaderStyle', 'taw-style.css');
+wp_enqueue_style( 'TAWuploaderStyle');
+
 // Load custom css for the Admin page
 function load_custom_wp_admin_style($hook) {
   if( $hook != 'toplevel_page_taw-uploader' ) {
